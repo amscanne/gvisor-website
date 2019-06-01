@@ -115,6 +115,18 @@ func registerRedirects(mux *http.ServeMux) {
 	}
 }
 
+// wrappedDir is a http.Dir with a 404 redirect.
+type wrappedDir http.Dir
+
+// Open opens the backing file.
+func (wrappedDir w) Open(name string) (http.File, error) {
+	if f, err := http.Dir(w).Open(name); err == nil {
+		return f, nil
+	}
+	// Serve the static 404 page.
+	return http.Dir(w).Open("404.html")
+}
+
 // registerStatic registers static file handlers
 func registerStatic(mux *http.ServeMux, staticDir string) {
 	if mux == nil {
